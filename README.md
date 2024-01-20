@@ -13,6 +13,10 @@ Python simulation of flock behaviors, i.e. Boids, with focus on graphical user i
 
 ## Dependencies
 * numpy
+* pygame
+* pygame_widgets
+* os
+* argparse
 
 
 ## Running `Boids_GUI.py`
@@ -36,4 +40,4 @@ jfducatel@gmail.com
 
 
 ## Aknowledgments
-1. 
+1. This interface is heavily based on the following youtube video on boid simulation: S. Lague "Coding Adventure: Boids" Youtube (2019) [https://www.youtube.com/watch?v=bqtqltqcQhw&t=95s]

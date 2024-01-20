@@ -1,22 +1,47 @@
-#Import Modules:
+#-----------------------------------------------------
+#BOIDS GUI CODE
+#Last Updated: Jan. 19, 2024
+#See README.md file for information
+#-----------------------------------------------------
+
+
+#-----------------------------------------------------
+#IMPORT MODULES
 import pygame
 import pygame_widgets
 from pygame_widgets.toggle import Toggle
 from pygame_widgets.slider import Slider
 import numpy as np
 import os
+import argparse
+#-----------------------------------------------------
 
 
-#Define functions:
+#----------------------------------------------
+#USE PARSER FOR COMMAND LINE ARGUMENTS
+parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+        description='Python simulation of flock behaviors, i.e. Boids, with focus on graphical user interface and visuals using pygame.',
+        epilog = 'For more information on this software, contact Jordan Ducatel at jfducatel@gmail.com.')
+#----------------------------------------------
+
+
+#----------------------------------------------
+#set ranodm seed:
+np.random.seed(1234)
+#----------------------------------------------
+
+
+#----------------------------------------------
+#DEFINE FUNCTION:
 #Define Triangle drawing function:
 def draw_triangle(t_x0_rel, t_y0_rel, t_angle, t_color):
     '''
     Description:
-        Draws a pygame polygon object that is a triangle
+        Draws a pygame polygon object that is a triangle with a given orientation.
     Input:
         t_x0, t_y0: relative center coordinates of triangle. Range between zero and one. dtype: int or float
         t_angle: Orientation angle for triangle. Units: rad. dtype: int/float
-        t_color: RGB color of triangle. dtype: ()
+        t_color: RGB color of triangle. format: (R, G, B). dtype: tuple
     '''
     t_x0 = t_x0_rel*sim_var['width']
     t_y0 = t_y0_rel*sim_var['height']
@@ -56,9 +81,37 @@ def loop_around_edges(t_x0, t_y0):
     return t_x0, t_y0
 
 
+#Define boids initialization
+def initialize_boids(N):
+    '''
+    Description:
+        Initialize an array of boids location, velocities and colors.
+    Input:
+        N: number of boids to initialize. dtype: int.
+    Output:
+        t_x0_i: Initial x position. unit: pix. dtype: 1D array
+        t_y0_i: Initial y position. unit: pix. dtype: 1D array
+        t_angle_i: Initial angle position. unit: rad. dtype: 1D array
+        t_vx0_i: Initial x velocity. unit: pix / frame. dtype: 1D array
+        t_vy0_i: Initial y velocity. unit: pix / frame. dtype: 1D array
+        t_colors: Boids individual colors. element format: (R, G, B). dtype: 1D array
+        case_study_original_color: Test study Boid color. format: (R, G, B). dtype: tupple
+    '''
+    t_x0_i = np.random.uniform(low=sim_var['bounding box scale'], high=1-sim_var['bounding box scale'], size=N)
+    t_y0_i = np.random.uniform(low=sim_var['bounding box scale'], high=1-sim_var['bounding box scale'], size=N)
+    t_angle_i = np.random.uniform(low=-np.pi, high=np.pi, size=N)
+    t_vx0_i = sim_var['t_speed'] * np.cos(t_angle_i)
+    t_vy0_i = sim_var['t_speed'] * np.sin(t_angle_i)
+    t_colors = np.random.choice(['lightblue', 'blue', 'darkblue'], size=N)
+    case_study_original_color = t_colors[0]
+    return t_x0_i, t_y0_i, t_angle_i, t_vx0_i, t_vy0_i, t_colors, case_study_original_color
+#----------------------------------------------
 
 
-#define colors:
+
+#----------------------------------------------
+#DEFINE VARIABLES
+#define colors dictionary:
 color = {'red':(204, 0, 0),
          'darkred':(153, 0, 0),
          'darkdarkred':(102, 0, 0),
@@ -87,8 +140,10 @@ sim_var = {'width': 640,
            'controls box scale': 0.6,
            'toggle scale': 0.03,
            'loop around correction': 0.005}
+#----------------------------------------------
 
 
+#----------------------------------------------
 #Setup pygame environment and windows and other variables
 os.environ["SDL_VIDEO_CENTERED"]='1'
 
@@ -98,21 +153,18 @@ pygame.display.set_caption("Boid Simulation")
 
 screen = pygame.display.set_mode((sim_var['width'] * (1+sim_var['controls box scale']), sim_var['height']))
 clock = pygame.time.Clock()
+#----------------------------------------------
 
+
+#----------------------------------------------
 #Initialize randomly triangles position and velocity:
-def initialize_boids(N):
-    t_x0_i = np.random.uniform(low=sim_var['bounding box scale'], high=1-sim_var['bounding box scale'], size=N)
-    t_y0_i = np.random.uniform(low=sim_var['bounding box scale'], high=1-sim_var['bounding box scale'], size=N)
-    t_angle_i = np.random.uniform(low=-np.pi, high=np.pi, size=N)
-    t_vx0_i = sim_var['t_speed'] * np.cos(t_angle_i)
-    t_vy0_i = sim_var['t_speed'] * np.sin(t_angle_i)
-    t_colors = np.random.choice(['lightblue', 'blue', 'darkblue'], size=N)
-    case_study_original_color = t_colors[0]
-    return t_x0_i, t_y0_i, t_angle_i, t_vx0_i, t_vy0_i, t_colors, case_study_original_color
-
-N = 50
+N = sim_var['number of triangles']
 t_x0_i, t_y0_i, t_angle_i, t_vx0_i, t_vy0_i, t_colors, case_study_original_color = initialize_boids(sim_var['number of triangles'])
+#----------------------------------------------
 
+
+#----------------------------------------------
+#DEFINE TEXT AND CONTROLS
 #Define text parameters for controls:
 font_1 = pygame.font.Font('freesansbold.ttf', 32)
 font_2 = pygame.font.Font('freesansbold.ttf', 20)
@@ -214,8 +266,11 @@ slider_2 = Slider(screen,
                   handleColour=(26, 115, 232))
 
 slider_2_value_old = slider_2.getValue()
+#----------------------------------------------
 
-#Run pygame GUI:
+
+#----------------------------------------------
+#RUN PYGAME GUI:
 run = True
 while run:
     clock.tick(sim_var['fps']) #Define clock
@@ -390,7 +445,10 @@ while run:
 
     pygame_widgets.update(events)
     pygame.display.update()
- 
-pygame.quit() #trow an error when I close the program and rerun it when I add the toggles.
+
+pygame.quit()
+#----------------------------------------------
+
+
 
 
